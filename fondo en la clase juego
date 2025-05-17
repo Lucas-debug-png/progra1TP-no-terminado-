@@ -1,0 +1,111 @@
+package juego;
+
+import java.awt.Color;
+
+import entorno.Entorno;
+import entorno.InterfaceJuego;
+import juego.Personaje.Gondolf;
+import entorno.Herramientas;
+import java.awt.Image;
+
+
+
+
+
+public class Juego extends InterfaceJuego {
+	// El objeto Entorno que controla el tiempo y otros
+	private Entorno entorno;
+	private Gondolf gondolf;
+	private Image fondo;
+	
+	//private Image panelLateral;
+//	private double x;
+//	private double y;
+
+	// Variables y métodos propios de cada grupo
+	// ...
+	
+	
+
+	Juego() {
+		// Inicializa el objeto entorno
+		entorno = new Entorno(this, "Gandalf el crocodrilo", 800, 600);
+		gondolf = new Gondolf(300, 300);
+		fondo = Herramientas.cargarImagen("piso2.jpg"); // cargamos la imagen solo una vez
+		
+		
+		// aca pueden entrar personajes, enemigos, obstaculos, puntos
+		//panelLateral = Herramientas.cargarImagen("panel.png"); // imagen que tenga botones
+		// Inicializar lo que haga falta para el juego
+		// ...
+
+		// Inicia el juego!
+		this.entorno.iniciar();
+		
+
+	}
+
+	/**
+	 * Durante el juego, el método tick() será ejecutado en cada instante y por lo
+	 * tanto es el método más importante de esta clase. Aquí se debe actualizar el
+	 * estado interno del juego para simular el paso del tiempo (ver el enunciado
+	 * del TP para mayor detalle).
+	 */
+	
+	public void tick() {
+		
+	
+		entorno.dibujarImagen(fondo, 400,300,0); // Imagen del fondo centrada
+		
+		entorno.dibujarRectangulo(700, 300, 200, 600, 0, Color.DARK_GRAY); // menu en la part derecha de la pantalla 
+	
+		
+		
+		
+
+		// Botón simple
+		//entorno.dibujarRectangulo(700, 200, 150, 40, 0, Color.BLUE); // botón azul
+		//entorno.escribirTexto("Lanzar Hechizo", 630, 205, Color.WHITE);
+		
+		// Cambiar la fuente antes de escribir (opcional)
+		
+		entorno.cambiarFont("Serif", 18, Color.white, entorno.NEGRITA);
+
+		// --- TEXTO SUPERIOR DERECHO ---
+		entorno.escribirTexto("VIDA: ", 620, 30);
+		entorno.escribirTexto("MURCIELAGOS:", 620, 60);
+		entorno.escribirTexto("POCIONES:", 620, 160);
+
+
+		
+		double Dx ;
+		double Dy  ;
+
+		entorno.ancho();
+		
+		gondolf.mover(0, 0, entorno);
+
+		
+
+		// entorno.dibujarRectangulo(x, y, Dy, Dx, Dy, null)
+
+		//if (!gondolf.colision(entorno)) {
+			
+			
+
+		//}
+
+		gondolf.dibujarPj(entorno);
+		
+		// Procesamiento de un instante de tiempo
+		// ...
+		
+		
+
+	}
+
+	@SuppressWarnings("unused")
+	public static void main(String[] args) {
+		Juego juego = new Juego();
+	}
+}
