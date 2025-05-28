@@ -1,0 +1,45 @@
+package juego;
+
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import entorno.Entorno;
+
+public class Roca {
+
+	private double x;
+	private double y;
+	private int ancho = 75;
+	private int alto = 75;
+	private Image imagen;
+
+	public Roca(double x, double y, Entorno entorno) {
+		this.x = x;
+		this.y = y;
+		this.imagen = new ImageIcon("imagenes/piedrita.png").getImage();
+	}
+
+	public void dibujar(Entorno entorno) {
+		entorno.dibujarImagen(this.imagen, this.x, this.y, 0, 0.10);
+	}
+
+	public boolean colisionConPj(double pjX, double pjY, int anchoPJ, int altoPJ) {
+		double rocaIzquierda = this.x - this.ancho / 2;
+		double rocaDerecha = this.x + this.ancho / 2;
+		double rocaArriba = this.y - this.alto / 2;
+		double rocaAbajo = this.y + this.alto / 2;
+
+		double pjIzquierda = pjX - anchoPJ / 2;
+		double pjDerecha = pjX + anchoPJ / 2;
+		double pjArriba = pjY - altoPJ / 2;
+		double pjAbajo = pjY + altoPJ / 2;
+		
+
+		boolean colisionX = rocaDerecha > pjIzquierda && rocaIzquierda < pjDerecha;
+		boolean colisionY = rocaAbajo > pjArriba && rocaArriba < pjAbajo;
+
+		return colisionX && colisionY;
+	}
+
+	public double getX() { return x; }
+	public double getY() { return y; }
+}
