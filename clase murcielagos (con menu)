@@ -1,0 +1,148 @@
+package juego;
+
+import java.awt.Image;
+import javax.swing.ImageIcon;
+
+import entorno.Entorno;
+import juego.Personaje.Gondolf;
+
+public class Murcielago {
+
+	private double x, y;            
+	private int velocidad;          
+	private double angulo;          
+	private double ancho = 30;      
+	private int alto = 30;         
+	private int vida = 100;         
+	private boolean estaVivo = true;
+
+	private Image imagen;           
+
+	
+	
+	
+	
+	public Murcielago(double angulo, double x, double y, int velocidad) {
+		
+		
+		this.angulo = angulo;
+		this.x = x;
+		this.y = y;
+		this.velocidad = velocidad;
+		
+		
+		this.imagen = new ImageIcon("imagenes/gondolf_espalda.png").getImage();
+		
+		
+	}
+
+	
+	
+	
+	public void calcularAnguloHaciaGondolf(Gondolf gondolf) {
+		this.angulo = Math.atan2(gondolf.getY() - this.y, gondolf.getX() - this.x);
+	}
+
+	
+	// Mueve el murciélago hacia el personaje
+	public void mover(Gondolf gondolf) {
+		if (!estaVivo) return;
+
+		calcularAnguloHaciaGondolf(gondolf);
+		y += velocidad * Math.sin(angulo);
+		x += velocidad * Math.cos(angulo);
+
+		if (colisionConPJ(gondolf)) {
+			System.out.println("chocó con el personaje");
+		}
+	}
+
+	// Verifica si choca contra los bordes del mapa
+	public boolean colision(double otroX, double otroY, Entorno entorno) {
+		if (!estaVivo) return false;
+
+		boolean chocaIzquierda = otroX - ancho < 10;
+		boolean chocaDerecha = otroX + ancho > 590;
+		boolean chocaArriba = otroY - alto < 0;
+		boolean chocaAbajo = otroY + alto > 570;
+
+		return chocaIzquierda || chocaDerecha || chocaArriba || chocaAbajo;
+	}
+
+	// Mueve al murciélago siguiendo al personaje con otro método
+	public void MurcielagoMov(Gondolf gondolf) {
+		if (!estaVivo) return;
+
+		double Xpj = gondolf.getX();
+		double Ypj = gondolf.getY();
+
+		double seguimiento = Math.atan2(Ypj - this.y, Xpj - this.x);
+		double velocidadX = Math.cos(seguimiento) * velocidad;
+		double velocidadY = Math.sin(seguimiento) * velocidad;
+
+		this.x += velocidadX;
+		this.y += velocidadY;
+
+		if (colisionConPJ(gondolf)) {
+			System.out.println("chocó con pj");
+		}
+	}
+
+	// Verifica si está tocando al personaje
+	public boolean colisionConPJ(Gondolf gondolf) {
+		if (!estaVivo) return false;
+
+		boolean colisionX = (this.x < gondolf.getX() + gondolf.getAnchoPJ()) &&
+		                    (this.x + this.ancho > gondolf.getX());
+
+		boolean colisionY = (this.y < gondolf.getY() + gondolf.getAltoPJ()) &&
+		                    (this.y + this.alto > gondolf.getY());
+
+		return colisionX && colisionY;
+	}
+
+	// Aumenta levemente la velocidad
+	public void acelerar() {
+		if (estaVivo)
+			velocidad += 0.0;
+	}
+
+	// Le resta vida al murciélago y lo elimina si llega a 0
+	public void restarVida(int cantidad) {
+		if (!estaVivo) return;
+
+		vida -= cantidad;
+		System.out.println("Vida del murciélago: " + vida);
+		if (vida <= 0) {
+			vida = 0;
+			estaVivo = false;
+			System.out.println("Murciélago eliminado");
+		}
+	}
+
+	// Dibuja el murciélago en pantalla si está vivo
+	public void dibujar(Entorno entorno) {
+		if (!estaVivo) return;
+
+		entorno.dibujarImagen(imagen, x + 10, y + 20, angulo, 2);
+
+		if (this.imagen == null) {
+			System.out.println("la imagen está vacía");
+		}
+	}
+
+	// Devuelve si el murciélago sigue vivo
+	public boolean estaVivo() {
+		return estaVivo;
+	}
+
+	// Devuelve coordenadas actuales
+	public double getX() {
+		return x;
+	}
+
+	public double getY() {
+		return y;
+	}
+}
+
