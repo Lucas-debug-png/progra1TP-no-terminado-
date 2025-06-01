@@ -1,0 +1,94 @@
+package juego;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import entorno.Entorno;
+import juego.Personaje.Gondolf;
+
+public class CreadorMurcielagos {
+	
+	private ArrayList<Murcielago> murcielagosTotal;
+	private ArrayList<Murcielago> murcielagosActivos;
+	
+	private final int TOTAL_MURCIELAGO= 50;
+	private final int MURCIELAGOS_X_OLEADA = 5;
+	
+	public CreadorMurcielagos() {
+		murcielagosTotal = new ArrayList<>();
+		murcielagosActivos = new ArrayList<>();
+		IniciaMurcielago();
+	}
+	
+	private void IniciaMurcielago() {
+		for (int i = 0; i < TOTAL_MURCIELAGO; i++) {
+			double x = -100;
+			double y = -100;
+			double angulo = Math.random() * 2 * Math.PI;
+			murcielagosTotal.add(new Murcielago(angulo, x, y, 1));
+		}
+		activarOleada();
+	}
+	
+	private void activarOleada() {
+		if (murcielagosTotal.isEmpty()) return;
+		
+		int cantidad = Math.min(MURCIELAGOS_X_OLEADA, murcielagosTotal.size());
+		
+		for (int i = 0; i < cantidad; i++) {
+			Murcielago m = murcielagosTotal.remove(0);
+			posicionesPantalla(m);
+			murcielagosActivos.add(m);
+		}
+	}
+	
+	public void posicionesPantalla(Murcielago murcielago) {
+		int borde = (int) (Math.random() * 4);
+		
+		if (borde == 0) {
+			murcielago.setPosicion(Math.random() * 600, 0); // arriba
+		} else if (borde == 1) {
+			murcielago.setPosicion(600, Math.random() * 600); // derecha
+		} else if (borde == 2) {
+			murcielago.setPosicion(Math.random() * 600, 600); // abajo
+		} else {
+			murcielago.setPosicion(0, Math.random() * 600); // izquierda
+		}
+	}
+	
+	public void actualizar(Gondolf gondolf, Entorno entorno) {
+		Iterator<Murcielago> iterador = murcielagosActivos.iterator();
+		
+		while (iterador.hasNext()) {
+			Murcielago m = iterador.next();
+			m.mover(gondolf);
+			
+			if (m.colisionConPJ(gondolf)) {
+				iterador.remove();
+			}
+		}
+		
+		if (murcielagosActivos.isEmpty() && !murcielagosTotal.isEmpty()) {
+			activarOleada();
+		}
+	}
+	
+	public boolean estaOcupada(double x , double y) {
+		for (Murcielago murcielago : murcielagosActivos) {
+			double distancia = Math.sqrt((murcielago.getX() - x) * (murcielago.getX() - x) + (murcielago.getY() - y) * (murcielago.getY() - y));
+			if (distancia < 50) return true; // Radio mínimo de separación
+		}
+		return false;
+	}
+	
+	public void dibujar(Entorno entorno) {
+		for (Murcielago m : murcielagosActivos) {
+			m.dibujar(entorno);
+		}
+	}
+	
+	
+	public ArrayList<Murcielago> getMurcielagosActivos() {
+		return murcielagosActivos;
+	}
+}
