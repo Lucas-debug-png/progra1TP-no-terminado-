@@ -1,0 +1,92 @@
+package juego;
+
+import entorno.Entorno;
+import juego.Personaje.Gondolf;
+
+import java.awt.Color;
+import java.awt.Image;
+import java.util.ArrayList;
+
+public class BotonesMouse {
+	private int x, y, ancho, alto;
+	private String texto;
+	private boolean seleccionado;
+
+	public BotonesMouse(int x, int y, int ancho, int alto, String texto) {
+		this.x = x;
+		this.y = y;
+		this.ancho = ancho;
+		this.alto = alto;
+		this.texto = texto;
+		this.seleccionado = false;
+	}
+
+	public void dibujar(Entorno entorno) {
+		Color color = seleccionado ? Color.YELLOW : Color.GREEN;
+		entorno.dibujarRectangulo(x, y, ancho, alto, 0, color);
+		entorno.cambiarFont("Arial", 16, Color.BLACK);
+		entorno.escribirTexto(texto, x - ancho / 3, y + 5);
+	}
+
+	public boolean estaDentro(int mx, int my) {
+		return mx > x - ancho / 2 && mx < x + ancho / 2 &&
+				my > y - alto / 2 && my < y + alto / 2;
+	}
+
+	public void setSeleccionado(boolean valor) {
+		this.seleccionado = valor;
+	}
+
+	public String getTexto() {
+		return texto;
+	}
+
+	// Método único que hace todo lo relacionado al hechizo
+	public int lanzarHechizo(
+			int mouseX,
+			int mouseY,
+			ArrayList<Murcielago> enemigos,
+			Gondolf gondolf,
+			Entorno entorno,
+			Image hechizo1,
+			Image hechizo2
+			) {
+		int radio = 100;
+		int muertos = 0;
+
+		// Mostrar círculo y hechizo
+		//entorno.dibujarCirculo(mouseX, mouseY, radio * 2, Color.CYAN);
+		if (texto.equals("Hechizo 1")) {
+			entorno.dibujarImagen(hechizo1, mouseX, mouseY, 0, 0.2);
+		} else if (texto.equals("Hechizo 2")) {
+			entorno.dibujarImagen(hechizo2, mouseX, mouseY, 0, 0.2);
+		}
+
+		// Recorremos enemigos
+		for (int i = enemigos.size() - 1; i >= 0; i--) {
+			Murcielago m = enemigos.get(i);
+			double dx = m.getX() - mouseX;
+			double dy = m.getY() - mouseY;
+			double distancia = Math.sqrt(dx * dx + dy * dy);
+
+			if (distancia <= radio) {
+				// Aplica daño si está dentro del área
+				if (texto.equals("Hechizo 1")) {
+					gondolf.quitarMana(0); // Gratis
+				} else if (texto.equals("Hechizo 2")) {
+
+					gondolf.quitarMana(10);
+
+				}
+
+				if (!m.estaVivo()) {
+					enemigos.remove(i);
+					muertos++;
+				}
+			}
+		}
+
+		return muertos;
+	}
+}
+
