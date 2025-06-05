@@ -1,0 +1,307 @@
+package juego;
+
+import java.awt.Color;
+
+
+
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.swing.ImageIcon;
+
+import entorno.Entorno;
+import entorno.Herramientas;
+import entorno.InterfaceJuego;
+import jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput;
+import juego.Personaje.Gondolf;
+
+public class Juego extends InterfaceJuego {
+	// El objeto Entorno que controla el tiempo y otros
+	private Entorno entorno;
+	private Gondolf gondolf;
+	private Reinicio reinicio;
+	private Roca roca;
+	private Murcielago murcielago;
+	private Items item;
+	private Image fondo , hechizo1, hechizo2;
+	
+	private int vida =100;
+	private int mana=100;
+	
+	private boolean mostrarHechizo=false;
+	
+	private int hechizoX = 0;
+	private int hechizoY = 0;
+	private String tipoHechizoActual = null;
+	
+	
+	private Reinicio reiniciarJuego;
+	private CreadorMurcielagos gestorMurcielagos;
+	
+	private ArrayList<BotonesMouse> botones = new ArrayList<>();
+	private String hechizoSeleccionado = null;
+	
+	private ArrayList<Items> itemsEnPantalla = new ArrayList<>();
+	
+	private ArrayList<Roca> rocas= new ArrayList<>();
+	private ArrayList<Murcielago> murcielagosTotal = new ArrayList<>(50); //total de murcielagos que tenemos
+	private ArrayList<Murcielago> murcielagosActivos = new ArrayList<> (5);//cantidad de murcielagos que iran apareciendo por oleada 
+	
+	private int murcielagosmuertos = murcielagosTotal.size() ;
+
+	private final int MURCIELAGOS_X_OLEADA = 5;
+	
+	//cantidad de murcielagos que iran apareciendo por oleada 
+	// Variables y métodos propios de cada grupo
+	// ...
+
+	Juego() {
+		// Inicializa el objeto entorno
+		
+		
+		entorno = new Entorno(this, "Gandalf", 800, 600);
+		
+		fondo= Herramientas.cargarImagen("FondoJuego.png");
+		hechizo1 = new ImageIcon("imagenes/hechizo1.png").getImage();
+		hechizo2 = new ImageIcon("imagenes/hechizo2.png").getImage();
+		
+		//Herramientas.loop("sonidos/musicaFondo2.wav");
+		
+		
+	
+		
+		
+		//botones del menu 
+		botones.add(new BotonesMouse(700, 400, 150, 40, "Hechizo 1"));
+		botones.add(new BotonesMouse(700, 450, 150, 40, "Hechizo 2"));
+		
+		
+		
+		
+		gestorMurcielagos = new CreadorMurcielagos();
+		
+		rocas.add(new Roca(500, 300, entorno));
+		rocas.add(new Roca(300, 200, entorno));
+		rocas.add(new Roca(100, 500, entorno));
+		rocas.add(new Roca(100, 100, entorno));
+		
+		gondolf = new Gondolf(400, 300, roca);
+		
+		murcielago= new Murcielago(100,200, 1, 2);
+		
+		reiniciarJuego= new Reinicio(entorno);
+		
+		
+		// aca pueden entrar personajes, enemigos, obstaculos, puntos
+
+		// Inicializar lo que haga falta para el juego
+		// ...
+
+		// Inicia el juego!
+		this.entorno.iniciar();
+
+	}
+
+	/**
+	 * Durante el juego, el método tick() será ejecutado en cada instante y por lo
+	 * tanto es el método más importante de esta clase. Aquí se debe actualizar el
+	 * estado interno del juego para simular el paso del tiempo (ver el enunciado
+	 * del TP para mayor detalle).
+	 */
+	public void tick() {
+
+	
+		
+
+		entorno.dibujarImagen(fondo, 300, 300, 0, 1.5);
+		entorno.dibujarRectangulo(700, 300, 200, 600, 0, Color.DARK_GRAY); // menu en la part derecha de la pantalla 
+
+		
+		if(!reiniciarJuego.perdi()) {
+		
+		entorno.ancho();
+		
+		gondolf.mover(0, 0, entorno, roca, rocas);
+		
+		// texto de vida y mana del personaje 
+		entorno.cambiarFont("Arial", 18, Color.WHITE);
+		entorno.escribirTexto("Vida", 620, 50);
+		entorno.escribirTexto("Maná", 620, 100);
+		
+		
+		
+		
+		//barras de vida y mana 
+		
+		
+		
+		entorno.dibujarRectangulo(700, 65, 140, 20, 0, Color.GRAY); 
+		entorno.dibujarRectangulo(700, 115, 140, 20, 0, Color.GRAY); 
+
+		entorno.dibujarRectangulo(700 - (70 - gondolf.getVida() * 0.7), 65, gondolf.getVida() * 1.4, 20, 0, Color.RED);
+		entorno.dibujarRectangulo(700 - (70 - gondolf.getMagia() * 0.7), 115, gondolf.getMagia() * 1.4, 20, 0, Color.CYAN);
+		
+		
+		
+		entorno.cambiarFont("Arial", 12, Color.WHITE);
+		entorno.escribirTexto("murcilagos muertos:" + murcielagosmuertos , 620, 200);
+		
+		
+		
+		int murcielagosVivos = gestorMurcielagos.getMurcielagosActivos().size();
+		entorno.escribirTexto("murciélagos vivos: " + murcielagosVivos, 620, 250);
+		
+		
+		entorno.escribirTexto("oleada:" + (murcielagosmuertos / MURCIELAGOS_X_OLEADA)  , 620, 150);
+		
+		
+		//}
+		
+		gestorMurcielagos.actualizar(gondolf, itemsEnPantalla, rocas);
+		gestorMurcielagos.dibujar(entorno);
+		
+		gondolf.dibujarPj(entorno);
+		
+
+		
+		
+	   Iterator<Items>iterarItems = itemsEnPantalla.iterator();
+	   
+	   while(iterarItems.hasNext()) {
+		   Items item= iterarItems.next();
+		   item.dibujar(entorno);
+		   
+		   
+		   if(item.colisionItemPJ(gondolf)) {
+			   
+			   System.out.println("antes - mana: "+ gondolf.getMagia());
+			   item.aplicarEfecto(gondolf);
+			   System.out.println("despues- mana"+ gondolf.getMagia());
+			   iterarItems.remove();
+			   System.out.println("item conseguido"+ gondolf.getVida());
+			   
+			  // entorno.dibujarRectangulo(item.getX(), item.getY(), 5, 10, 0, Color.RED);
+		   }
+	   }
+//		mostrarHechizo=false;
+		
+		for(Roca roca : rocas) {
+			
+			roca.dibujar(entorno);
+		}
+		
+		
+		// Dibujar botones
+		for (BotonesMouse boton : botones) {
+				boton.dibujar(entorno);
+
+			}
+		int oleada= murcielagosmuertos/MURCIELAGOS_X_OLEADA;
+		
+		if (oleada == 9) {
+			
+			reiniciarJuego.setEstadisticas(murcielagosmuertos, oleada);
+			reiniciarJuego.setter(true);
+		}
+		
+		if(gondolf.estaMuerto() || gondolf.sinMana() ) {
+			
+			
+			
+			
+			
+			reiniciarJuego.setEstadisticas(murcielagosmuertos, oleada);
+			reiniciarJuego.setter(true);
+		}
+		}
+		//roca.colisionConPj(gondolf);
+		// Procesamiento de un instante de tiempo
+		// ...
+		
+		
+
+		else {
+			
+		
+			reiniciarJuego.dibujar(entorno);
+			
+	
+			
+			if(gondolf.getMagia()<=0) {
+				
+				entorno.cambiarFont("Arial", 30, Color.WHITE);
+				entorno.escribirTexto("Te quedaste sin Mana", 240, 420);
+			}
+			
+			
+			
+			if(reiniciarJuego.verificacion()) {
+				
+				reiniciarTodo();
+				
+				reiniciarJuego.setter(false);
+			}
+		}
+		
+		
+		// Interacción con el mouse
+		if (entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) {
+		    int mx = entorno.mouseX();
+		    int my = entorno.mouseY();
+
+		    // Seleccionar hechizo
+		    for (BotonesMouse boton : botones) {
+		        if (boton.estaDentro(mx, my)) {
+		            hechizoSeleccionado = boton.getTexto();
+		            return;
+		        }
+		    }
+
+		    // Llamar al hechizo si ya está seleccionado
+		    if (hechizoSeleccionado != null) {
+		        for (BotonesMouse boton : botones) {
+		            if (boton.getTexto().equals(hechizoSeleccionado)) {
+		            	murcielagosmuertos += boton.lanzarHechizo(
+		                    mx, my,
+		                    gestorMurcielagos.getMurcielagosActivos(),
+		                    gondolf,
+		                    entorno,
+		                    hechizo1, hechizo2
+		                );
+		                break;
+		            }
+		        }
+		        hechizoSeleccionado = null;
+		    }
+		}
+	
+			
+		}
+
+	
+	
+	
+	public void reiniciarTodo() {
+		
+		gondolf= new Gondolf(400, 300, roca);
+		gestorMurcielagos =new CreadorMurcielagos();
+		
+		rocas.clear();
+		rocas.add(new Roca(500, 300, entorno));
+		rocas.add(new Roca(300, 200, entorno));
+		rocas.add(new Roca(100, 500, entorno));
+		rocas.add(new Roca(100, 100, entorno));
+		
+		reiniciarJuego.setter(false);
+		mana=100;
+		murcielagosmuertos=0;
+		
+		itemsEnPantalla.clear();
+	}
+
+	@SuppressWarnings("unused")
+	public static void main(String[] args) {
+		Juego juego = new Juego();
+	}
+}
